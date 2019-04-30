@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Whiteboard boys</title>
+    <link href="css/style.css" rel="stylesheet" />
+    <style>
+        #msg {
+            position: absolute;
+            background: #05fc2499;
+            top: 20px;
+            left: 30px;
+            padding: 30px;
+            border-radius: 5px;
+            border: 2px solid #1abc1a;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script src="./js/Event.js"></script>
+    <script src="./js/Canvas.js"></script>
+    <script src="./js/main.js"></script>
+
+    <div id="msg">Just start drawing and enjoy yourself! Reset button coming up soon!</div>
+    <script>setTimeout(function () { document.getElementById("msg").remove(); }, 5000);</script>
+
+    <!-- <canvas ssheight="800" width="800" id="test"></canvas> -->
+
+    <!-- <script>
+        let canvasElement = document.getElementById("test");
+        let ctx = canvasElement.getContext("2d");
+        canvasElement.onclick = (e) => {
+            let x = e.pageX;
+            let y = e.pageY;
+
+            ctx.fillRect(x, y, 20, 20);
+        }
+
+    </script> -->
+
+</body>
+
+</html>
