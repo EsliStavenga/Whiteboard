@@ -13,3 +13,6 @@ See it live in action here: https://www.eslistavenga.nl/portfolio/whiteboard
 - Add text
 - Select your own color
 - Online support through websockets!
+- Export and import a canvas
+- Clear canvas
+- Eraser
