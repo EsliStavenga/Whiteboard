@@ -16,3 +16,4 @@ See it live in action here: https://www.eslistavenga.nl/portfolio/whiteboard
 - Export and import a canvas
 - Clear canvas
 - Eraser
+- Mobile Support
