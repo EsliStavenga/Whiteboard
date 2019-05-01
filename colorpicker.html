@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Whiteboard boys</title>
+    <link href="css/style.css" rel="stylesheet" />
+    <style>
+        #test2 {
+            background: blue;
+        }
+
+        #test,
+        #test2 {
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 300px;
+            height: 300px;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 20%;
+            left: calc(20% + 300px + 50px);
+        }
+
+        #gradient-bar {
+            height: 300px;
+            width: 50px;
+            top: 20%;
+            left: calc(20% + 700px);
+            position: absolute;
+            border-radius: 4px;
+            /* background-image: linear-gradient(to bottom, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 20%, rgb(0, 255, 0) 40%, rgb(0, 255, 255) 60%, rgb(0, 0, 255) 80%, rgb(255, 0, 255) 100%) */
+            background-image: linear-gradient(to bottom, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 16%, rgb(0, 255, 0) 33%, rgb(0, 255, 255) 50%, rgb(0, 0, 255) 66%, rgb(255, 0, 255) 83%, rgb(255, 0, 0) 100%)
+        }
+
+        #test {
+
+            background-image:
+                /* linear-gradient(to top, red, red), */
+                linear-gradient(to bottom, transparent 0%, #000 100%),
+                linear-gradient(to right, #fff 0%, transparent 100%);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="test2"></div>
+    <div id="test"></div>
+
+    <canvas height="300" width="300" id="canvas"></canvas>
+    <div id="gradient-bar"></div>
+    <script>
+
+        let body = document.getElementsByTagName("body")[0];
+        let gradientBarY = 300;
+        //should be the width of the canvas
+        let colorOffset = (255 / 300);
+
+        //console.log(getRGB(gradientBarY));
+
+        let canvas = document.getElementById("canvas");
+        let ctx = canvas.getContext("2d");
+
+        //update the canvas' background based on the gradient
+        document.getElementById("gradient-bar").onmousemove = (e) => {
+            if (e.buttons == 1) {
+
+                //firefox still uses layerY, the new browsers switched to offsetY
+                let y = (e.layerY ? e.layerY : e.offsetY);
+                setBackground(getRGB(y));
+            }
+        };
+
+        //get the rgb value if someone moves over it
+        document.getElementById("canvas").onmousemove = (e) => {
+            if (e.buttons == 1) {
+                let x, y;
+
+                if (e.offsetY) {
+                    y = e.offsetY;
+                    x = e.offsetX;
+                } else if (e.layerY) {
+                    y = e.layerY;
+                    x = e.layerX;
+                }
+
+                let pixel = ctx.getImageData(x, y, 1, 1).data;
+                body.style.background = (`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
+
+            }
+        }
+
+
+        //from left to right
+        let whiteGradient = ctx.createLinearGradient(0, 0, 300, 0);
+
+        whiteGradient.addColorStop(0, "#fff");
+        whiteGradient.addColorStop(0.05, "#fff");
+        whiteGradient.addColorStop(1, "transparent");
+
+
+        //from bottom to top
+        let blackGradient = ctx.createLinearGradient(0, 300, 0, 0);
+        blackGradient.addColorStop(0, "#000");
+        blackGradient.addColorStop(1, "transparent");
+
+        setBackground("blue");
+
+        //set the background color to the specified color
+        function setBackground(color) {
+
+            //clear canvas
+            fillCanvas("#000");
+
+            fillCanvas(color);
+            fillCanvas(whiteGradient);
+            fillCanvas(blackGradient);
+
+        }
+
+        //fill the entire canvas with a specific style
+        function fillCanvas(fillStyle) {
+            ctx.fillStyle = fillStyle;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        /* SINE AND SQUARE WAVE COMBINED */
+        //getr the RGB value from a specific value on the slider
+        function getRGB(y) {
+            //normalize the result and times the x limit (The limit of the x value of the cosine function)
+            //I stuck with 6 because it's easiest to calculate
+            let x = ((y * colorOffset) / 255) * 6;
+            let leftHalfOfEquation = .75 * (.66666 * Math.PI * x);
+
+            //calculate the sine for blue and green
+            let blueSine = (x < 2 ? 0 : calculateCosine(leftHalfOfEquation, 2));
+            let greenSine = (x > 4 ? 0 : 2 * calculateCosine(leftHalfOfEquation));
+            let redSine;
+
+            //red has the sine of blue until 2, between 2 and 4 nothing, then it has the sine of green
+            //as illustrated in my beautiful picture (/img/rgb.psd)
+            if (x < 2) {
+                redSine = calculateCosine(leftHalfOfEquation, 2);
+            } else if (x >= 2 && x <= 4) {
+                redSine = 0;
+            } else if (x > 4) {
+                redSine = calculateCosine(leftHalfOfEquation);
+            }
+
+            //cap the result between 0 and 1
+            redSine = Math.min(redSine, 1);
+            greenSine = Math.min(greenSine, 1);
+            blueSine = Math.min(blueSine, 1);
+
+            //multiple the value by the limit of RGB (255)
+            return `rgb(${redSine * 255}, ${greenSine * 255}, ${blueSine * 255})`;
+        }
+
+        function calculateCosine(leftHalf, piMultiply = 1) {
+            return 2 * Math.cos(leftHalf + piMultiply * Math.PI) + 2;
+        }
+
+        /*
+
+
+        ------=========== SINE ===========-----------
+
+
+        function getRGB(y) {
+            //normalize y postiion
+            let x = ((y * colorOffset) / 255) * 3;
+            console.log(x);
+
+            // let red = (x > 1 && x < 2 ? 0 : ((Math.cos(2.1 * x) + 1) / 2));
+            let red = ((Math.cos(2.1 * x) + 1) / 2);
+            let green = (x < 0.5 || x > 2 ? 0 : ((Math.cos(4.2 * x + 1) + 1) / 2));
+            let blue = (x < 1 || x > 2.5 ? 0 : ((Math.cos(4.2 * x - 1.1) + 1) / 2));
+
+            return `rgb(${ red * 255}, ${ green * 255}, ${ blue * 255})`;
+        }
+
+        let count = 0;
+        setInterval(function () {
+            let rgb = getRGB(count++);
+            //console.log(rgb);
+            setBackground(rgb);
+
+            if (count > 300) {
+                count = 0;
+            }
+        }, 100);*/
+
+    </script>
+
+    <!-- <canvas ssheight="800" width="800" id="test"></canvas> -->
+
+    <!-- <script>
+        let canvasElement = document.getElementById("test");
+        let ctx = canvasElement.getContext("2d");
+        canvasElement.onclick = (e) => {
+            let x = e.pageX;
+            let y = e.pageY;
+
+            ctx.fillRect(x, y, 20, 20);
+        }
+
+    </script> -->
+
+</body>
+
+</html>

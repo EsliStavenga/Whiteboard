@@ -50,10 +50,8 @@ class Canvas {
 
         //if the user wants to resize the canvas on window resize
         if (enableResize) {
-            window.onresize = () => {
-                this._saveState();
+            window.onresize = (e) => {
                 this._setCanvasSize();
-                this._setState();
             }
         }
 
@@ -70,6 +68,10 @@ class Canvas {
         ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 
         //draw all stored objects
+        //without this the lines look jagged
+        //but with this the eraser won't work
+        //we could do it the disgusting way and make the eraser white
+
         this._objects.forEach((object) => {
 
             this.drawObject(object);
@@ -84,17 +86,10 @@ class Canvas {
     drawObject(object) {
         //draw all the segments
         object.forEach((segment) => {
-
             let prevLineWidth = this.ctx.lineWidth;
             let prevStrokeStyle = this.ctx.strokeStyle;
-            this.ctx.lineWidth = segment.lineWidth;
-            this.ctx.strokeStyle = segment.strokeStyle;
 
-
-            this.ctx.beginPath();
-            this.ctx.moveTo(segment.xStart, segment.yStart);
-            this.ctx.lineTo(segment.xEnd, segment.yEnd);
-            this.ctx.stroke();
+            segment.draw(this.ctx);
 
             this.ctx.lineWidth = prevLineWidth;
             this.ctx.strokeStyle = prevStrokeStyle;
@@ -110,15 +105,6 @@ class Canvas {
     }
 
     /**
-     * Set the canvas' fillstyle
-     * 
-     * @param {String} color The color to set the fillStyle to. Hex code, e.g. #fff 
-     */
-    setColor(color) {
-        this.ctx.fillStyle = color;
-    }
-
-    /**
      * Draw a line
      * 
      * @param {int} x1 The x start position of the line 
@@ -130,14 +116,14 @@ class Canvas {
      */
     drawLine(x1, y1, x2, y2, lineWidth = 3, color = "#000000") {
 
-        this._currentObject.push({
-            xStart: x1,
-            xEnd: x2,
-            yStart: y1,
-            yEnd: y2,
-            lineWidth: lineWidth,
-            strokeStyle: color
-        });
+        this._currentObject.push(new Segment(
+            x1,
+            x2,
+            y1,
+            y2,
+            lineWidth,
+            color
+        ));
     }
 
     /**
