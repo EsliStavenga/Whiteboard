@@ -19,12 +19,6 @@
             height: 300px;
         }
 
-        #canvas {
-            position: absolute;
-            top: 20%;
-            left: calc(20% + 300px + 50px);
-        }
-
         #gradient-bar {
             height: 300px;
             width: 50px;
@@ -43,6 +37,45 @@
                 linear-gradient(to bottom, transparent 0%, #000 100%),
                 linear-gradient(to right, #fff 0%, transparent 100%);
         }
+
+        .canvas-wrapper {
+            position: absolute;
+            height: 300px;
+            width: 300px;
+            top: 20%;
+            left: calc(20% + 300px + 50px);
+        }
+
+        .color-bubble {
+            left: 50%;
+            top: 50%;
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid white;
+            border-radius: 20px;
+            /* transition: all .05s linear; */
+            z-index: 2;
+        }
+
+        .gradient-indicator {
+            position: absolute;
+            border: 1px solid white;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            height: 5px;
+            width: 100%;
+            left: 0%;
+            top: 50%;
+        }
+
+        #canvas {
+            position: relative;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
     </style>
 </head>
 
@@ -50,8 +83,14 @@
     <div id="test2"></div>
     <div id="test"></div>
 
-    <canvas height="300" width="300" id="canvas"></canvas>
-    <div id="gradient-bar"></div>
+    <div class="canvas-wrapper">
+        <div class="color-bubble"></div>
+        <canvas height="300" width="300" id="canvas"></canvas>
+    </div>
+
+    <div id="gradient-bar">
+        <div class="gradient-indicator"></div>
+    </div>
     <script>
 
         let body = document.getElementsByTagName("body")[0];
@@ -62,18 +101,71 @@
         //console.log(getRGB(gradientBarY));
 
         let canvas = document.getElementById("canvas");
+        let bubble = document.getElementsByClassName("color-bubble")[0];
         let ctx = canvas.getContext("2d");
+        let canvasBounds = canvas.getBoundingClientRect();
 
         //update the canvas' background based on the gradient
-        document.getElementById("gradient-bar").onmousemove = (e) => {
-            if (e.buttons == 1) {
+        document.querySelectorAll("#gradient-bar, .gradient-indicator").forEach((elem) => {
+            elem.onmousemove = (e) => {
+                if (e.buttons == 1 && !dragging) {
 
-                //firefox still uses layerY, the new browsers switched to offsetY
-                let y = (e.layerY ? e.layerY : e.offsetY);
-                setBackground(getRGB(y));
+                    //firefox still uses layerY, the new browsers switched to offsetY
+                    let y = e.clientY - document.getElementById("gradient-bar").getBoundingClientRect().top;
+                    setBackground(getRGB(y));
+                    console.log(y);
+                    document.getElementsByClassName("gradient-indicator")[0].style.top = y + "px";
+                }
+            };
+        });
+
+        //keep track of whatever to move the bubble
+        let dragging = false;
+        //whenever the user clicks the canvas or bubble, start dragging the bubble
+        document.querySelectorAll("#canvas, .color-bubble").forEach((elem) => {
+            elem.onmousedown = (e) => {
+                dragging = (e.buttons == 1);
             }
-        };
+        });
 
+        //once the user lets go of the left mouse button, let go of the bubble
+        document.onmouseup = (e) => {
+            dragging = false;
+        }
+
+        /**
+         * 
+         * 
+         * the value
+         * the minimum bound
+         * the maximum bound
+         */
+        function clamp(val, min, max) {
+            return Math.max(min, Math.min(max, val));
+        }
+
+        //if the user moves the mouse and the left mouse button is pressed, start dragging the bubble
+        document.onmousemove = (e) => {
+            if (dragging) {
+                //calculate the vertical/horizontal centerpoint
+                let halfBubbleHeight = bubble.offsetHeight / 2;
+                let halfBubbleWidth = bubble.offsetWidth / 2;
+                //calculate the bubble's position by making the left of the canvas 0, then calculating the amount of pixels the user is from 0
+                //clamp the value between -half the bubble and canvas size + half the bubble
+                bubble.style.top = clamp((e.clientY - canvasBounds.top) - halfBubbleHeight, -halfBubbleHeight, 300 - halfBubbleHeight) + "px"; //Math.max(-bubble.offsetHeight / 2, Math.min((e.clientY - canvasBounds.top), 300 - bubble.offsetHeight / 2)) + "px";
+                bubble.style.left = clamp((e.clientX - canvasBounds.left) - halfBubbleWidth, -halfBubbleWidth, 300 - halfBubbleWidth) + "px"; //Math.max(-bubble.offsetWidth / 2, Math.min(e.clientX - canvasBounds.left, 300 - bubble.offsetWidth / 2)) + "px";
+
+                //parse the float and compensate for the earlier calculated offset
+                let x = parseFloat(bubble.style.left) + halfBubbleWidth
+                let y = parseFloat(bubble.style.top) + halfBubbleHeight;
+
+                //get the pixel data
+                let pixel = ctx.getImageData(Math.min(299, x), Math.min(299, y), 1, 1).data;
+                body.style.background = (`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
+            }
+        }
+
+        /*
         //get the rgb value if someone moves over it
         document.getElementById("canvas").onmousemove = (e) => {
             if (e.buttons == 1) {
@@ -89,16 +181,16 @@
 
                 let pixel = ctx.getImageData(x, y, 1, 1).data;
                 body.style.background = (`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
-
+                dragging = true;
+                startBuggleDrag(x, y);
             }
-        }
+        } */
 
 
         //from left to right
         let whiteGradient = ctx.createLinearGradient(0, 0, 300, 0);
 
         whiteGradient.addColorStop(0, "#fff");
-        whiteGradient.addColorStop(0.05, "#fff");
         whiteGradient.addColorStop(1, "transparent");
 
 
