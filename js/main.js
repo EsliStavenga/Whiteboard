@@ -2,7 +2,8 @@ let prevX = null;
 let prevY = null;
 let canvas = new Canvas();
 let ctx = canvas.canvas.getContext("2d");
-
+canvas.appendTo("body");
+canvas.loop();
 
 canvas.bindEvent(Canvas.EVENTS.MOUSEMOVE, (e) => {
     //if only AND ONLY the left mouse button is clicked
@@ -13,7 +14,8 @@ canvas.bindEvent(Canvas.EVENTS.MOUSEMOVE, (e) => {
         //ctx.globalCompositeOperation = 'destination-out-out';
 
         if (prevX != null && prevY != null) {
-            canvas.drawLine(prevX, prevY, e.pageX, e.pageY, undefined, '#' + (Math.random() * 0xFFFFFF << 0).toString(16));
+            canvas.setFillstyle('#' + (Math.random() * 0xFFFFFF << 0).toString(16));
+            canvas.drawLine(prevX, prevY, e.pageX, e.pageY);
         }
 
         prevX = e.pageX;

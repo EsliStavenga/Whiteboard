@@ -83,37 +83,67 @@
     <div id="test2"></div>
     <div id="test"></div>
 
-    <div class="canvas-wrapper">
+    <!-- <div class="canvas-wrapper">
         <div class="color-bubble"></div>
         <canvas height="300" width="300" id="canvas"></canvas>
     </div>
-
+ -->
     <div id="gradient-bar">
         <div class="gradient-indicator"></div>
     </div>
+    <script src="js/Line.js"></script>
+    <script src="js/Segment.js"></script>
+    <script src="js/Shape/Shape.js"></script>
+    <script src="js/Shape/Square.js"></script>
+    <script src="js/Event.js"></script>
+    <script src="js/Canvas.js"></script>
+    <script src="js/ColorPicker/ColorPicker.js"></script>
     <script>
-
         let body = document.getElementsByTagName("body")[0];
         let gradientBarY = 300;
         //should be the width of the canvas
         let colorOffset = (255 / 300);
+        let c = new ColorPicker(300, 300);
+        c.appendTo();
+
+        let canvasBounds = c.canvas.canvas.getBoundingClientRect();
+
+        function clamp(val, min, max) {
+            return Math.max(min, Math.min(max, val));
+        }
+
+        let gradientBarBounds = document.getElementById("gradient-bar").getBoundingClientRect();
+        document.querySelectorAll("#gradient-bar, .gradient-indicator").forEach((elem) => {
+            elem.onmousemove = (e) => {
+                if (e.buttons == 1 && !c.dragging) {
+                    //firefox still uses layerY, the new browsers switched to offsetY
+                    let y = clamp(e.clientY - gradientBarBounds.top, 0, gradientBarBounds.bottom - gradientBarBounds.top);
+                    c.setBackground(c.getRGB(y));
+                    c.colorChanged(undefined);
+                    document.getElementsByClassName("gradient-indicator")[0].style.top = y + "px";
+                }
+            };
+        });
+
 
         //console.log(getRGB(gradientBarY));
 
-        let canvas = document.getElementById("canvas");
+        //throw new Error;
+    </script>
+    <!-- let canvas = document.getElementById("canvas");
         let bubble = document.getElementsByClassName("color-bubble")[0];
         let ctx = canvas.getContext("2d");
         let canvasBounds = canvas.getBoundingClientRect();
+        let gradientBarBounds = document.getElementById("gradient-bar").getBoundingClientRect();
 
         //update the canvas' background based on the gradient
         document.querySelectorAll("#gradient-bar, .gradient-indicator").forEach((elem) => {
             elem.onmousemove = (e) => {
                 if (e.buttons == 1 && !dragging) {
-
                     //firefox still uses layerY, the new browsers switched to offsetY
-                    let y = e.clientY - document.getElementById("gradient-bar").getBoundingClientRect().top;
+                    let y = clamp(e.clientY - gradientBarBounds.top, 0, gradientBarBounds.bottom - gradientBarBounds.top);
                     setBackground(getRGB(y));
-                    console.log(y);
+                    colorChanged(undefined);
                     document.getElementsByClassName("gradient-indicator")[0].style.top = y + "px";
                 }
             };
@@ -147,22 +177,31 @@
         //if the user moves the mouse and the left mouse button is pressed, start dragging the bubble
         document.onmousemove = (e) => {
             if (dragging) {
-                //calculate the vertical/horizontal centerpoint
-                let halfBubbleHeight = bubble.offsetHeight / 2;
-                let halfBubbleWidth = bubble.offsetWidth / 2;
+                colorChanged(e);
+            }
+        }
+
+        function colorChanged(e) {
+
+            //calculate the vertical/horizontal centerpoint
+            let halfBubbleHeight = bubble.offsetHeight / 2;
+            let halfBubbleWidth = bubble.offsetWidth / 2;
+
+            if (e) {
                 //calculate the bubble's position by making the left of the canvas 0, then calculating the amount of pixels the user is from 0
                 //clamp the value between -half the bubble and canvas size + half the bubble
                 bubble.style.top = clamp((e.clientY - canvasBounds.top) - halfBubbleHeight, -halfBubbleHeight, 300 - halfBubbleHeight) + "px"; //Math.max(-bubble.offsetHeight / 2, Math.min((e.clientY - canvasBounds.top), 300 - bubble.offsetHeight / 2)) + "px";
                 bubble.style.left = clamp((e.clientX - canvasBounds.left) - halfBubbleWidth, -halfBubbleWidth, 300 - halfBubbleWidth) + "px"; //Math.max(-bubble.offsetWidth / 2, Math.min(e.clientX - canvasBounds.left, 300 - bubble.offsetWidth / 2)) + "px";
 
-                //parse the float and compensate for the earlier calculated offset
-                let x = parseFloat(bubble.style.left) + halfBubbleWidth
-                let y = parseFloat(bubble.style.top) + halfBubbleHeight;
-
-                //get the pixel data
-                let pixel = ctx.getImageData(Math.min(299, x), Math.min(299, y), 1, 1).data;
-                body.style.background = (`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
             }
+
+            //parse the float and compensate for the earlier calculated offset
+            let x = parseFloat(bubble.style.left) + halfBubbleWidth
+            let y = parseFloat(bubble.style.top) + halfBubbleHeight;
+
+            //get the pixel data
+            let pixel = ctx.getImageData(Math.min(299, x), Math.min(299, y), 1, 1).data;
+            body.style.background = (`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
         }
 
         /*
@@ -285,7 +324,8 @@
             }
         }, 100);*/
 
-    </script>
+    </script> -->
+
 
     <!-- <canvas ssheight="800" width="800" id="test"></canvas> -->
 
