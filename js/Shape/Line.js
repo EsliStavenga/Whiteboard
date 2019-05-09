@@ -7,6 +7,10 @@ class Line {
         this._segments = [];
     }
 
+    containsSegments() {
+        return (this._segments.length > 0);
+    }
+
     draw(ctx) {
         this._segments.forEach((segment) => {
             segment.draw(ctx);
@@ -24,6 +28,6 @@ class Line {
      * Clone the line
      */
     clone() {
-        return this._segments;
+        return JSON.parse(JSON.stringify(this));
     }
 }

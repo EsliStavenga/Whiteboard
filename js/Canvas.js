@@ -1,21 +1,4 @@
-class Canvas {
-
-    /**
-     * JavaScript's idea of an ENUM
-     */
-    static get EVENTS() {
-        return {
-            MOUSEUP: 1,
-            MOUSEMOVE: 2,
-            CLICK: 3,
-            MOUSEDOWN: 4
-        }
-    }
-
-    get EVENTS() {
-        return this.constructor.EVENTS;
-    }
-
+class Canvas extends GenericObject {
     static get SEGMENT_TYPES() {
         return {
             LINE: 1,
@@ -31,6 +14,10 @@ class Canvas {
         return this.canvas.height;
     }
 
+    get boundingClientRect() {
+        return this.canvas.getBoundingClientRect();
+    }
+
     /**
      * Create a new canvas/Whiteboard
      * 
@@ -39,23 +26,18 @@ class Canvas {
      * @param {bool} [enableResize=true] Whether to resize the canvas whenever the window resizes.
      */
     constructor(w = window.innerWidth, h = window.innerHeight) {
+        super();
+
         //create a new canvas and create some events
         this.canvas = document.createElement("canvas");
         this.ctx = this.canvas.getContext("2d");
-        this.clickEvent = new Event();
-        this.mouseMoveEvent = new Event();
-        this.mouseUpEvent = new Event();
-        this.mouseDownEvent = new Event();
         this._objects = [];
         this._currentObject = new Line();
         this.loopEnabled = false;
         this.fillStyle = "#000000";
 
         //else this will be broken sadly
-        this.canvas.onclick = (e) => { this._handleEvent(e); }; //this.fireClick;
-        this.canvas.onmousemove = (e) => { this._handleEvent(e); };//this.fireMove;
-        this.canvas.onmouseup = (e) => { this._handleEvent(e); };//this.fireMove;
-        this.canvas.onmousedown = (e) => { this._handleEvent(e); };//this.fireMove;
+        this.bindAllEventsToObject(this.canvas);
 
         //every drawn object will be saved as a different object.
         //the different segments from the line will be bundled together into one object
@@ -63,6 +45,15 @@ class Canvas {
 
         //set the canvas size and add it to the body
         this._setCanvasSize(w, h);
+    }
+
+    /**
+     * Add the object to a specific element
+     *
+     * @param {String/Object} querySelector The queryselector
+     */
+    appendTo(querySelector) {
+        this._appendTo(querySelector, this.canvas);
     }
 
     /**
@@ -93,19 +84,6 @@ class Canvas {
     loop() {
         this.loopEnabled = true;
         this._requestAnimationFrame();
-    }
-
-    /**
-     * Add the canvas to a specific element
-     * 
-     * @param {String/object} querySelector The queryselector 
-     */
-    appendTo(querySelector = "body") {
-        if (typeof (querySelector) == "object") {
-            querySelector.appendChild(this.canvas);
-        } else {
-            document.querySelector(querySelector).appendChild(this.canvas);
-        }
     }
 
     /**
@@ -175,6 +153,8 @@ class Canvas {
      * @private
      */
     _saveObject() {
+        if (!this._currentObject.containsSegments()) return;
+
         this._objects.push(this._currentObject);
         this._currentObject = new Line();
     }
@@ -217,57 +197,6 @@ class Canvas {
     clearObjects() {
         this._objects = [];
         this._currentObject = new Line();
-    }
-
-    /**
-     * Handle all events
-     * 
-     * @param {event} e The event. 
-     * @private
-     */
-    _handleEvent(e) {
-        switch (e.type) {
-            case "click":
-                this.clickEvent.call(e);
-                break;
-            case "mousemove":
-                this.mouseMoveEvent.call(e);
-                break;
-            case "mouseup":
-                this.mouseUpEvent.call(e);
-                break;
-            case "mousedown":
-                this.mouseDownEvent.call(e);
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
-     * Bind an event to a method. Every event can have near to infinite binds.
-     * 
-     * @param {int} event The event number, use the static getters e.g. MOUSEMOVE and CLICK. 
-     * @param {function} callback The function to call.
-     */
-    bindEvent(event, callback) {
-        let events = this.constructor.EVENTS;
-        switch (event) {
-            case events.CLICK:
-                this.clickEvent.add(callback);
-                break;
-            case events.MOUSEMOVE:
-                this.mouseMoveEvent.add(callback);
-                break;
-            case events.MOUSEUP:
-                this.mouseUpEvent.add(callback);
-                break;
-            case events.MOUSEDOWN:
-                this.mouseDownEvent.add(callback);
-                break;
-            default:
-                break;
-        }
     }
 
     /**

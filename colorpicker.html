@@ -19,17 +19,6 @@
             height: 300px;
         }
 
-        #gradient-bar {
-            height: 300px;
-            width: 50px;
-            top: 20%;
-            left: calc(20% + 700px);
-            position: absolute;
-            border-radius: 4px;
-            /* background-image: linear-gradient(to bottom, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 20%, rgb(0, 255, 0) 40%, rgb(0, 255, 255) 60%, rgb(0, 0, 255) 80%, rgb(255, 0, 255) 100%) */
-            background-image: linear-gradient(to bottom, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 16%, rgb(0, 255, 0) 33%, rgb(0, 255, 255) 50%, rgb(0, 0, 255) 66%, rgb(255, 0, 255) 83%, rgb(255, 0, 0) 100%)
-        }
-
         #test {
 
             background-image:
@@ -38,15 +27,32 @@
                 linear-gradient(to right, #fff 0%, transparent 100%);
         }
 
+        .gradient-bar {
+            top: 0%;
+            /* left: 20%; */
+            margin-left: 20px;
+            /* left: calc(20% + 700px); */
+            /* position: absolute; */
+            display: inline-block;
+            border-radius: 4px;
+            /* background-image: linear-gradient(to bottom, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 20%, rgb(0, 255, 0) 40%, rgb(0, 255, 255) 60%, rgb(0, 0, 255) 80%, rgb(255, 0, 255) 100%) */
+            background-image: linear-gradient(to bottom, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 16%, rgb(0, 255, 0) 33%, rgb(0, 255, 255) 50%, rgb(0, 0, 255) 66%, rgb(255, 0, 255) 83%, rgb(255, 0, 0) 100%)
+        }
+
         .canvas-wrapper {
-            position: absolute;
+            /* position: absolute; */
             height: 300px;
             width: 300px;
+            display: inline-block;
+        }
+
+        .wrapper {
+            position: absolute;
             top: 20%;
             left: calc(20% + 300px + 50px);
         }
 
-        .color-bubble {
+        .colorpicker-bubble {
             left: 50%;
             top: 50%;
             position: absolute;
@@ -59,15 +65,15 @@
             z-index: 2;
         }
 
-        .gradient-indicator {
-            position: absolute;
+        .gradientbar-indicator {
+            position: relative;
             border: 1px solid white;
             background: rgba(255, 255, 255, 0.3);
             border-radius: 5px;
             height: 5px;
             width: 100%;
             left: 0%;
-            top: 50%;
+            /* top: 50%; */
         }
 
         #canvas {
@@ -88,42 +94,45 @@
         <canvas height="300" width="300" id="canvas"></canvas>
     </div>
  -->
-    <div id="gradient-bar">
-        <div class="gradient-indicator"></div>
-    </div>
-    <script src="js/Line.js"></script>
+    <!-- <div id="gradient-bar">
+        <div class=" gradient-indicator"></div>
+    </div> -->
+    <script src="js/Shape/Line.js"></script>
     <script src="js/Segment.js"></script>
     <script src="js/Shape/Shape.js"></script>
     <script src="js/Shape/Square.js"></script>
     <script src="js/Event.js"></script>
+    <script src="js/GenericObject.js"></script>
     <script src="js/Canvas.js"></script>
+    <script src="js/ColorPicker/Indicator.js"></script>
+    <script src="js/ColorPicker/Bubble.js"></script>
+    <script src="js/ColorPicker/GradientBar.js"></script>
     <script src="js/ColorPicker/ColorPicker.js"></script>
+    <script src="js/Helpers/Converters.js"></script>
     <script>
         let body = document.getElementsByTagName("body")[0];
         let gradientBarY = 300;
         //should be the width of the canvas
         let colorOffset = (255 / 300);
         let c = new ColorPicker(300, 300);
-        c.appendTo();
+        c.appendTo("body");
 
-        let canvasBounds = c.canvas.canvas.getBoundingClientRect();
 
         function clamp(val, min, max) {
             return Math.max(min, Math.min(max, val));
         }
 
-        let gradientBarBounds = document.getElementById("gradient-bar").getBoundingClientRect();
-        document.querySelectorAll("#gradient-bar, .gradient-indicator").forEach((elem) => {
+        //let gradientBarBounds = document.getElementById("gradient-bar").getBoundingClientRect();
+        /* document.querySelectorAll("#gradient-bar, .gradient-indicator").forEach((elem) => {
             elem.onmousemove = (e) => {
                 if (e.buttons == 1 && !c.dragging) {
                     //firefox still uses layerY, the new browsers switched to offsetY
                     let y = clamp(e.clientY - gradientBarBounds.top, 0, gradientBarBounds.bottom - gradientBarBounds.top);
-                    c.setBackground(c.getRGB(y));
-                    c.colorChanged(undefined);
+                    c.setBackground(gb.getRGB(y));
                     document.getElementsByClassName("gradient-indicator")[0].style.top = y + "px";
                 }
             };
-        });
+        }); */
 
 
         //console.log(getRGB(gradientBarY));

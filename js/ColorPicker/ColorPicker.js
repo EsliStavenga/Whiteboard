@@ -1,4 +1,4 @@
-class ColorPicker {
+class ColorPicker extends GenericObject {
 
     /**
      * Get the index of the current Colorpicker
@@ -22,58 +22,76 @@ class ColorPicker {
      * @param {int} [y] The y position of the canvas element
      */
     constructor(h = undefined, w = undefined, x = 0, y = 0) {
+        super();
+
         this.canvas = new Canvas(w, h, false);
         this.index = this.constructor.INDEX;
         this.dragging = false;
+        this.colorChanged = new Event();
 
         this._createGradients(this.canvas);
         this._createColorpicker();
 
         //the color picker always starts in the middle
-        this.setBackground(this.getRGB(h / 2));
+        this.setBackground(this.gradientBar.getRGB());
         this._bindEvents();
     }
 
-    appendTo(querySelector = "body") {
-        //FIXME perhaps
-        if (typeof (querySelector) == "object") {
-            querySelector.appendChild(this._canvasWrapper);
-        } else {
-            document.querySelector(querySelector).appendChild(this._canvasWrapper);
-        }
+    appendTo(querySelector) {
+        this._appendTo(querySelector, this._wrapper);
     }
 
     _createColorpicker() {
-        this._canvasWrapper = document.createElement("div");
-        this._canvasWrapper.classList.add("canvas-wrapper");
+        this._wrapper = document.createElement("div");
+        this._wrapper.classList.add("wrapper");
+        let _canvasWrapper = document.createElement("div");
+        _canvasWrapper.classList.add("canvas-wrapper");
 
-        //create the bubble
-        this.bubble = document.createElement("div");
-        this.bubble.classList.add("color-bubble");
+        //create the gradient bar and it's indicator
+        this.gradientBar = new GradientBar(this.canvas.width / 6 + "px", this.canvas.height + "px");
 
+        //create the bubble, 50% doesn't work for some reason
+        this.bubble = new Indicator(this.canvas.height / 2 + "px", this.canvas.width / 2 + "px", "colorpicker-bubble");
+
+        //create a wrapper for both the canvas + bubble and the wrapper + gradient bar
         //add the canvas and bubble to the wrapper
-        this._canvasWrapper.appendChild(this.bubble);
-        this.canvas.appendTo(this._canvasWrapper);
+        this.bubble.appendTo(_canvasWrapper);
+        this.canvas.appendTo(_canvasWrapper);
+        this._wrapper.appendChild(_canvasWrapper);
+
+        //the gradient bar should be right
+        this.gradientBar.appendTo(this._wrapper);
     }
 
     _createGradients() {
         //left (white) to right (transparent)
-        this.whiteGradient = this.canvas.ctx.createLinearGradient(0, 0, this.canvas.width, 0);
-        this.whiteGradient.addColorStop(0, "#fff");
-        this.whiteGradient.addColorStop(1, "transparent");
+        this.whiteGradient = this._createGradient("#fff", "transparent", this.canvas.width, 0);
 
         //bottom (black) to top (transparent)
-        this.blackGradient = this.canvas.ctx.createLinearGradient(0, this.canvas.height, 0, 0);
-        this.blackGradient.addColorStop(0, "#000");
-        this.blackGradient.addColorStop(1, "transparent");
+        this.blackGradient = this._createGradient("#000", "transparent", 0, this.canvas.height);
+    }
 
+    /**
+     * 
+     * @param {String} startColor The starting color
+     * @param {String} endColor The end color
+     * @param {int} width The width of the gradient
+     * @param {int} height The height of the gradient
+     */
+    _createGradient(startColor, endColor, width, height) {
+        let gradient = this.canvas.ctx.createLinearGradient(0, height, width, 0);
+        gradient.addColorStop(0, startColor);
+        gradient.addColorStop(1, endColor);
+
+        return gradient;
     }
 
     _bindEvents() {
         //the way it's setup people still control the bubble even outside the canvas
         document.onmousemove = (e) => {
             if (this.dragging) {
-                this.colorChanged(e);
+                this.updateBubblePosition(e);
+                this._notifyColorChanged();
             }
         }
 
@@ -83,18 +101,37 @@ class ColorPicker {
 
         this.canvas.bindEvent(this.canvas.EVENTS.MOUSEDOWN, (e) => {
             this.dragging = (e.buttons == 1);
-            //immediately finre the colorChanged event once
-            this.colorChanged(e);
+            //immediately fire the updateBubblePosition event once
+            this.updateBubblePosition(e);
+            this._notifyColorChanged();
         });
 
-        this.bubble.onmousedown = (e) => {
+        this.bubble.bindEvent(this.bubble.EVENTS.MOUSEDOWN, (e) => {
             this.dragging = (e.buttons == 1);
-        };
+        });
+
+        this.gradientBar.colorChanged.add((color) => {
+            this.setBackground(color);
+            this._notifyColorChanged();
+        })
+        // this.gradientBarIndicator.bindEvent(this.gradientBarIndicator.EVENTS.MOUSEDOWN, (e) => {
+
+        // })
     }
 
+    /**
+     * Notify all subscribers of the colorChanged property
+     */
+    _notifyColorChanged() {
+        this.colorChanged.call(this.getRGB());
+    }
+
+    /**
+     * Update the color picker's color
+     * 
+     * @param {String} color The color to change the color picker to
+     */
     setBackground(color) {
-        //clear canvas
-        //this.fillCanvas("#000");
 
         //clear the objects
         this.canvas.clearObjects();
@@ -117,6 +154,7 @@ class ColorPicker {
         this.canvas.drawSquare(0, 0, 300);
     }
 
+    /*
     getRGB(y) {
         //normalize the result and times the x limit (The limit of the x value of the cosine function)
         //I stuck with 6 because it's easiest to calculate since they all match up perfectly there
@@ -124,56 +162,81 @@ class ColorPicker {
         let leftHalfOfEquation = .75 * (.66666 * Math.PI * x);
         let blueCosine = this.calculateCosine(leftHalfOfEquation, 2);
         let greenCosine = this.calculateCosine(leftHalfOfEquation);
-
+    
         //calculate the sine for blue and green
         let blue = (x < 2 ? 0 : blueCosine);
         let green = (x > 4 ? 0 : greenCosine);
         let red = 0;
-
+    
         //red has the sine of blue until 2, between 2 and 4 nothing, then it has the sine of green
         //as illustrated in my beautiful picture (/img/rgb.psd)
-
+    
         //turn red off unless this if is true
         if (x < 2) {
             red = blueCosine;
         } else if (x > 4) {
             red = greenCosine;
         }
-
-
+    
+    
         //cap the result between 0 and 1
         red = Math.min(red, 1);
         green = Math.min(green, 1);
         blue = Math.min(blue, 1);
-
+    
         //multiple the value by the limit of RGB (255)
         return `rgb(${red * 255}, ${green * 255}, ${blue * 255})`;
     }
-
+    
     calculateCosine(leftHalf, piMultiply = 1) {
         return 2 * Math.cos(leftHalf + piMultiply * Math.PI) + 2;
-    }
+    } */
 
-    colorChanged(e) {
-        //calculate the vertical/horizontal centerpoint
-        let halfBubbleHeight = this.bubble.offsetHeight / 2;
-        let halfBubbleWidth = this.bubble.offsetWidth / 2;
+    /**
+     * Get the RGB value under the current bubble
+     * 
+     * @returns {array} An array. The first value being the RGB value, then follow the RGB values seperately
+     */
+    getRGB() {
 
-        if (e) {
-            //calculate the bubble's position by making the left of the canvas 0, then calculating the amount of pixels the user is from 0
-            //clamp the value between -half the bubble and canvas size + half the bubble
-            this.bubble.style.top = clamp((e.clientY - canvasBounds.top) - halfBubbleHeight, -halfBubbleHeight, 300 - halfBubbleHeight) + "px"; //Math.max(-bubble.offsetHeight / 2, Math.min((e.clientY - canvasBounds.top), 300 - bubble.offsetHeight / 2)) + "px";
-            this.bubble.style.left = clamp((e.clientX - canvasBounds.left) - halfBubbleWidth, -halfBubbleWidth, 300 - halfBubbleWidth) + "px"; //Math.max(-bubble.offsetWidth / 2, Math.min(e.clientX - canvasBounds.left, 300 - bubble.offsetWidth / 2)) + "px";
+        let halfBubbleHeight = this.bubble.halfHeight;
+        let halfBubbleWidth = this.bubble.halfWidth;
 
-        }
-
-        //parse the float and compensate for the earlier calculated offset
-        let x = parseFloat(this.bubble.style.left) + halfBubbleWidth
-        let y = parseFloat(this.bubble.style.top) + halfBubbleHeight;
+        let x = parseFloat(this.bubble.left) + halfBubbleWidth
+        let y = parseFloat(this.bubble.top) + halfBubbleHeight;
 
         //get the pixel data
-        let pixel = this.canvas.ctx.getImageData(Math.min(299, x), Math.min(299, y), 1, 1).data;
-        body.style.background = (`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
+        let pixel = this.canvas.ctx.getImageData(Math.min(this.canvas.width - 1, x), Math.min(this.canvas.height - 1, y), 1, 1).data;
+        let r = pixel[0];
+        let g = pixel[1];
+        let b = pixel[2];
+        return [`rgb(${r}, ${g}, ${b})`, r, g, b];
+
+    }
+
+    updateBubblePosition(e) {
+
+        if (!e) return;
+
+        let canvasBounds = this.canvas.boundingClientRect;
+        //calculate the vertical/horizontal centerpoint
+        let halfBubbleHeight = this.bubble.halfHeight;
+        let halfBubbleWidth = this.bubble.halfWidth;
+
+        //calculate the bubble's position by making the left of the canvas 0, then calculating the amount of pixels the user is from 0
+        //clamp the value between -half the bubble and canvas size + half the bubble
+        this.bubble.top = clamp((e.clientY - canvasBounds.top) - halfBubbleHeight, -halfBubbleHeight, this.canvas.height - halfBubbleHeight) + "px"; //Math.max(-bubble.offsetHeight / 2, Math.min((e.clientY - canvasBounds.top), 300 - bubble.offsetHeight / 2)) + "px";
+        this.bubble.left = clamp((e.clientX - canvasBounds.left) - halfBubbleWidth, -halfBubbleWidth, this.canvas.width - halfBubbleWidth) + "px"; //Math.max(-bubble.offsetWidth / 2, Math.min(e.clientX - canvasBounds.left, 300 - bubble.offsetWidth / 2)) + "px";
+
+
+
+        //parse the float and compensate for the earlier calculated offset
+        //let x = parseFloat(this.bubble.style.left) + halfBubbleWidth
+        //let y = parseFloat(this.bubble.style.top) + halfBubbleHeight;
+
+        //get the pixel data
+        //let pixel = this.canvas.ctx.getImageData(Math.min(this.canvas.width - 1, x), Math.min(this.canvas.height - 1, y), 1, 1).data;
+        //body.style.background = (`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
 
     }
 
