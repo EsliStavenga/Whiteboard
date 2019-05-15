@@ -18,10 +18,8 @@ class ColorPicker extends GenericObject {
      * 
      * @param {int} [h] The height of the canvas element 
      * @param {int} [w] The width of the canvas element
-     * @param {int} [x] The x position of the canvas element
-     * @param {int} [y] The y position of the canvas element
      */
-    constructor(h = undefined, w = undefined, x = 0, y = 0) {
+    constructor(h = undefined, w = undefined) {
         super();
 
         this.canvas = new Canvas(w, h, false);
@@ -88,16 +86,17 @@ class ColorPicker extends GenericObject {
 
     _bindEvents() {
         //the way it's setup people still control the bubble even outside the canvas
-        document.onmousemove = (e) => {
+        //addEventListener allows multiple listeners unlike document.onmousemove
+        document.addEventListener("mousemove", (e) => {
             if (this.dragging) {
                 this.updateBubblePosition(e);
                 this._notifyColorChanged();
             }
-        }
+        });
 
-        document.onmouseup = (e) => {
+        document.addEventListener("mouseup", (e) => {
             this.dragging = false;
-        }
+        });
 
         this.canvas.bindEvent(this.canvas.EVENTS.MOUSEDOWN, (e) => {
             this.dragging = (e.buttons == 1);
@@ -111,7 +110,7 @@ class ColorPicker extends GenericObject {
         });
 
         this.gradientBar.colorChanged.add((color) => {
-            this.setBackground(color);
+            this.setBackground(color[0]);
             this._notifyColorChanged();
         })
         // this.gradientBarIndicator.bindEvent(this.gradientBarIndicator.EVENTS.MOUSEDOWN, (e) => {
@@ -151,53 +150,15 @@ class ColorPicker extends GenericObject {
     //fill the entire canvas with a specific style
     fillCanvas(fillStyle) {
         this.canvas.setFillstyle(fillStyle);
-        this.canvas.drawSquare(0, 0, 300);
+        this.canvas.drawSquare(0, 0, this.canvas.height);
     }
-
-    /*
-    getRGB(y) {
-        //normalize the result and times the x limit (The limit of the x value of the cosine function)
-        //I stuck with 6 because it's easiest to calculate since they all match up perfectly there
-        let x = ((y * colorOffset) / 255) * 6;
-        let leftHalfOfEquation = .75 * (.66666 * Math.PI * x);
-        let blueCosine = this.calculateCosine(leftHalfOfEquation, 2);
-        let greenCosine = this.calculateCosine(leftHalfOfEquation);
-    
-        //calculate the sine for blue and green
-        let blue = (x < 2 ? 0 : blueCosine);
-        let green = (x > 4 ? 0 : greenCosine);
-        let red = 0;
-    
-        //red has the sine of blue until 2, between 2 and 4 nothing, then it has the sine of green
-        //as illustrated in my beautiful picture (/img/rgb.psd)
-    
-        //turn red off unless this if is true
-        if (x < 2) {
-            red = blueCosine;
-        } else if (x > 4) {
-            red = greenCosine;
-        }
-    
-    
-        //cap the result between 0 and 1
-        red = Math.min(red, 1);
-        green = Math.min(green, 1);
-        blue = Math.min(blue, 1);
-    
-        //multiple the value by the limit of RGB (255)
-        return `rgb(${red * 255}, ${green * 255}, ${blue * 255})`;
-    }
-    
-    calculateCosine(leftHalf, piMultiply = 1) {
-        return 2 * Math.cos(leftHalf + piMultiply * Math.PI) + 2;
-    } */
 
     /**
-     * Get the RGB value under the current bubble
-     * 
-     * @returns {array} An array. The first value being the RGB value, then follow the RGB values seperately
+     * Get the RGB value of the current position of the indicator
+     *
+     * @param {boolean} valueOnly Whether to get just the RGB(r,g,b) value or an array in the format [rgb(), r, g, b]
      */
-    getRGB() {
+    getRGB(valueOnly = true) {
 
         let halfBubbleHeight = this.bubble.halfHeight;
         let halfBubbleWidth = this.bubble.halfWidth;
@@ -210,7 +171,9 @@ class ColorPicker extends GenericObject {
         let r = pixel[0];
         let g = pixel[1];
         let b = pixel[2];
-        return [`rgb(${r}, ${g}, ${b})`, r, g, b];
+        let rgb = Converters.rgbToArray(r, g, b);
+
+        return (valueOnly ? rgb[0] : rgb);
 
     }
 
@@ -225,19 +188,8 @@ class ColorPicker extends GenericObject {
 
         //calculate the bubble's position by making the left of the canvas 0, then calculating the amount of pixels the user is from 0
         //clamp the value between -half the bubble and canvas size + half the bubble
-        this.bubble.top = clamp((e.clientY - canvasBounds.top) - halfBubbleHeight, -halfBubbleHeight, this.canvas.height - halfBubbleHeight) + "px"; //Math.max(-bubble.offsetHeight / 2, Math.min((e.clientY - canvasBounds.top), 300 - bubble.offsetHeight / 2)) + "px";
-        this.bubble.left = clamp((e.clientX - canvasBounds.left) - halfBubbleWidth, -halfBubbleWidth, this.canvas.width - halfBubbleWidth) + "px"; //Math.max(-bubble.offsetWidth / 2, Math.min(e.clientX - canvasBounds.left, 300 - bubble.offsetWidth / 2)) + "px";
-
-
-
-        //parse the float and compensate for the earlier calculated offset
-        //let x = parseFloat(this.bubble.style.left) + halfBubbleWidth
-        //let y = parseFloat(this.bubble.style.top) + halfBubbleHeight;
-
-        //get the pixel data
-        //let pixel = this.canvas.ctx.getImageData(Math.min(this.canvas.width - 1, x), Math.min(this.canvas.height - 1, y), 1, 1).data;
-        //body.style.background = (`rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`);
-
+        this.bubble.top = MathExtensions.clamp((e.clientY - canvasBounds.top) - halfBubbleHeight, -halfBubbleHeight, this.canvas.height - halfBubbleHeight) + "px";
+        this.bubble.left = MathExtensions.clamp((e.clientX - canvasBounds.left) - halfBubbleWidth, -halfBubbleWidth, this.canvas.width - halfBubbleWidth) + "px";
     }
 
 

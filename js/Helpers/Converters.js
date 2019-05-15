@@ -22,4 +22,8 @@ class Converters {
         return "#" + this.componentToHex(r) + this.componentToHex(g) + this.componentToHex(b);
     }
 
+    static rgbToArray(r, g, b) {
+        return [`rgb(${r}, ${g}, ${b})`, r, g, b];
+    }
+
 }

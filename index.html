@@ -15,6 +15,17 @@
             border-radius: 5px;
             border: 2px solid #1abc1a;
         }
+
+        .button {
+            padding: 12px;
+            display: inline-block;
+            border-radius: 5px;
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            /* box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3); */
+            background: linear-gradient(0% #fff, 80% #fff, 100%, rgba(0, 0, 0, 0.3));
+            /* border: 2px solid black; */
+        }
     </style>
 </head>
 
@@ -22,13 +33,28 @@
     <div id="msg">Just start drawing and enjoy yourself! Reset button coming up soon!</div>
     <script>setTimeout(function () { document.getElementById("msg").remove(); }, 5000);</script>
 
-    <script src="./js/Shape/Line.js"></script>
-    <script src="./js/Shape/Shape.js"></script>
-    <script src="./js/Shape/Square.js"></script>
-    <script src="./js/Segment.js"></script>
-    <script src="./js/Event.js"></script>
-    <script src="./js/Canvas.js"></script>
+    <div class="button">IM</div>
+
+    <script src="js/Shape/Line.js"></script>
+    <script src="js/Segment.js"></script>
+    <script src="js/Shape/Shape.js"></script>
+    <script src="js/Shape/Square.js"></script>
+    <script src="js/Event.js"></script>
+    <script src="js/GenericObject.js"></script>
+    <script src="js/Canvas.js"></script>
+    <script src="js/ColorPicker/Indicator.js"></script>
+    <script src="js/ColorPicker/Bubble.js"></script>
+    <script src="js/ColorPicker/GradientBar.js"></script>
+    <script src="js/ColorPicker/ColorPicker.js"></script>
+    <script src="js/Helpers/Converters.js"></script>
+    <script src="js/Helpers/MathExtensions.js"></script>
     <script src="./js/main.js"></script>
+    <script>
+        document.getElementsByClassName("button")[0].onclick = (e) => {
+            let c = new ColorPicker(300, 300);
+            c.appendTo("body");
+        }
+    </script>
 
     <!-- <canvas ssheight="800" width="800" id="test"></canvas> -->
 
