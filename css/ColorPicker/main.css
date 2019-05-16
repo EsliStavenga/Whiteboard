@@ -1,49 +1,50 @@
+.gradient-bar {
+    top: 0%;
+    margin-left: 20px;
+    display: inline-block;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 16%, rgb(0, 255, 0) 33%, rgb(0, 255, 255) 50%, rgb(0, 0, 255) 66%, rgb(255, 0, 255) 83%, rgb(255, 0, 0) 100%)
+}
 
-        .gradient-bar {
-            top: 0%;
-            margin-left: 20px;
-            display: inline-block;
-            border-radius: 4px;
-            background-image: linear-gradient(to bottom, rgb(255, 0, 0) 0%, rgb(255, 255, 0) 16%, rgb(0, 255, 0) 33%, rgb(0, 255, 255) 50%, rgb(0, 0, 255) 66%, rgb(255, 0, 255) 83%, rgb(255, 0, 0) 100%)
-        }
+.canvas-wrapper {
+    display: inline-block;
+}
 
-        .canvas-wrapper {
-            display: inline-block;
-        }
+.wrapper {
+    position: relative;
+    display: inline-block;
+    white-space: nowrap;
+}
 
-        .wrapper {
-            position: relative;
-            top: 20%;
-            left: calc(20% + 300px + 50px);
-            display: inline-block;
-            white-space: nowrap;
-        }
+.hide {
+    display: none;
+}
 
-        .colorpicker-bubble {
-            left: 50%;
-            top: 50%;
-            position: absolute;
-            height: 20px;
-            width: 20px;
-            background: rgba(255, 255, 255, 0.3);
-            border: 2px solid white;
-            border-radius: 20px;
-            z-index: 2;
-        }
+.colorpicker-bubble {
+    left: 50%;
+    top: 50%;
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid white;
+    border-radius: 20px;
+    z-index: 2;
+}
 
-        .gradientbar-indicator {
-            position: relative;
-            border: 1px solid white;
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 5px;
-            height: 5px;
-            width: 100%;
-            left: 0%;
-        }
+.gradientbar-indicator {
+    position: relative;
+    border: 1px solid white;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    height: 5px;
+    width: 100%;
+    left: 0%;
+}
 
-        #canvas {
-            position: relative;
-            top: 0;
-            left: 0;
-            z-index: 1;
-        }
+#canvas {
+    position: relative;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}

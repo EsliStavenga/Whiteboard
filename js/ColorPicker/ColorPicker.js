@@ -61,6 +61,18 @@ class ColorPicker extends GenericObject {
         this.gradientBar.appendTo(this._wrapper);
     }
 
+    hide() {
+        this._wrapper.classList.add("hide");
+    }
+
+    show() {
+        this._wrapper.classList.remove("hide");
+    }
+
+    toggleDisplay() {
+        this._wrapper.classList.toggle("hide");
+    }
+
     _createGradients() {
         //left (white) to right (transparent)
         this.whiteGradient = this._createGradient("#fff", "transparent", this.canvas.width, 0);

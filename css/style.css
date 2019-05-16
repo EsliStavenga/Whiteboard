@@ -6,3 +6,14 @@ body, html {
 canvas {
     display: block;
 }
+
+/** TODO give this thingymajig a little top-arrow */
+.colorpicker-wrapper {
+    position: absolute;
+    top: 50px;
+    left: 200px;
+}
+
+.button {
+    position: absolute;
+}

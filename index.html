@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <title>Whiteboard boys</title>
     <link href="css/style.css" rel="stylesheet" />
+    <link href="css/ColorPicker/main.css" rel="stylesheet" />
     <style>
         #msg {
             position: absolute;
@@ -34,6 +35,7 @@
     <script>setTimeout(function () { document.getElementById("msg").remove(); }, 5000);</script>
 
     <div class="button">IM</div>
+    <div class="colorpicker-wrapper"></div>
 
     <script src="js/Shape/Line.js"></script>
     <script src="js/Segment.js"></script>
@@ -49,12 +51,7 @@
     <script src="js/Helpers/Converters.js"></script>
     <script src="js/Helpers/MathExtensions.js"></script>
     <script src="./js/main.js"></script>
-    <script>
-        document.getElementsByClassName("button")[0].onclick = (e) => {
-            let c = new ColorPicker(300, 300);
-            c.appendTo("body");
-        }
-    </script>
+
 
     <!-- <canvas ssheight="800" width="800" id="test"></canvas> -->
 
